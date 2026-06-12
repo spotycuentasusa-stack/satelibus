@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SateliBus — Internet Satelital para Buses Interprovinciales</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════
+   RESET & VARIABLES
+═══════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+:root {
+  --navy:    #06111F;
+  --navy2:   #0B1D31;
+  --navy3:   #112540;
+  --navy4:   #0E2038;
+  --gold:    #C9A84C;
+  --gold2:   #E8CC7A;
+  --silver:  #B8CCE4;
+  --muted:   #6A85A0;
+  --white:   #F2F6FC;
+  --border:  rgba(201,168,76,0.2);
+}
+
+body {
+  background: var(--navy);
+  color: var(--white);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* ═══════════════════════════════════════════════
+   NAVEGACIÓN
+═══════════════════════════════════════════════ */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 48px;
+  background: rgba(6,17,31,0.95);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+}
+.logo { font-family: 'Bebas Neue'; font-size: 24px; letter-spacing: 3px; color: var(--white); }
+.logo span { color: var(--gold); }
+.nav-links { display: flex; gap: 28px; list-style: none; }
+.nav-links a {
+  font-size: 11px; font-weight: 600; letter-spacing: 1.5px;
+  color: var(--silver); text-decoration: none; text-transform: uppercase;
+  transition: color .2s;
+}
+.nav-links a:hover { color: var(--gold); }
+.nav-btn {
+  background: var(--gold); color: var(--navy);
+  font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+  text-transform: uppercase; text-decoration: none;
+  padding: 9px 20px; border-radius: 2px;
+  transition: background .2s;
+}
+.nav-btn:hover { background: var(--gold2); }
+@media(max-width:768px){
+  .nav-links { display: none; }
+  nav { padding: 14px 20px; }
+}
+
+/* ═══════════════════════════════════════════════
+   HERO — SIN POSICIONAMIENTO ABSOLUTO EN CONTENIDO
+═══════════════════════════════════════════════ */
+#hero {
+  margin-top: 57px; /* altura del nav */
+  padding: 80px 48px 80px;
+  background: var(--navy2);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Fondo decorativo — SOLO detrás, no interfiere con texto */
+#hero::before {
+  content: '';
+  position: absolute; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 70% 60% at 80% 30%, rgba(201,168,76,0.06) 0%, transparent 70%),
+    linear-gradient(160deg, #06111F 0%, #0B1D31 50%, #112540 100%);
+  pointer-events: none;
+}
+.hero-grid-bg {
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(201,168,76,0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(201,168,76,0.035) 1px, transparent 1px);
+  background-size: 56px 56px;
+  animation: gridMove 24s linear infinite;
+}
+@keyframes gridMove { to { background-position: 0 56px; } }
+
+/* Todo el contenido del hero en flujo normal */
+.hero-inner {
+  position: relative; z-index: 1;
+  max-width: 1100px; margin: 0 auto;
+  display: flex; flex-direction: column; gap: 0;
+}
+
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 12px;
+  font-size: 10px; font-weight: 700; letter-spacing: 4px;
+  color: var(--gold); text-transform: uppercase;
+  margin-bottom: 28px;
+  opacity: 0; animation: au .7s .1s forwards;
+}
+.hero-tag::before { content:''; width:32px; height:1px; background:var(--gold); flex-shrink:0; }
+
+.hero-h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(40px, 5.5vw, 80px);
+  font-weight: 900; line-height: 1.05;
+  letter-spacing: -1.5px;
+  margin-bottom: 24px;
+  opacity: 0; animation: au .7s .25s forwards;
+}
+.hero-h1 strong {
+  display: block;
+  color: var(--gold);
+  font-style: italic;
+}
+
+.hero-p {
+  font-size: 17px; font-weight: 300; color: var(--silver);
+  line-height: 1.75; max-width: 560px;
+  margin-bottom: 36px;
+  opacity: 0; animation: au .7s .4s forwards;
+}
+
+.hero-btns {
+  display: flex; gap: 14px; align-items: center; flex-wrap: wrap;
+  margin-bottom: 60px;
+  opacity: 0; animation: au .7s .55s forwards;
+}
+.btn-gold {
+  background: var(--gold); color: var(--navy);
+  font-size: 12px; font-weight: 700; letter-spacing: 2px;
+  text-transform: uppercase; text-decoration: none;
+  padding: 14px 30px; border-radius: 2px;
+  transition: background .2s, transform .2s, box-shadow .2s;
+  display: inline-block;
+}
+.btn-gold:hover { background: var(--gold2); transform: translateY(-2px); box-shadow: 0 10px 32px rgba(201,168,76,.22); }
+.btn-outline {
+  font-size: 12px; font-weight: 600; letter-spacing: 2px;
+  text-transform: uppercase; text-decoration: none; color: var(--silver);
+  display: inline-flex; align-items: center; gap: 8px;
+  transition: color .2s;
+}
+.btn-outline:hover { color: var(--gold); }
+.btn-outline span { transition: transform .2s; display: inline-block; }
+.btn-outline:hover span { transform: translateX(4px); }
+
+/* Estadísticas — en flujo normal, grid de 4 columnas */
+.hero-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  opacity: 0; animation: au .7s .7s forwards;
+}
+@media(max-width:700px){
+  .hero-stats { grid-template-columns: 1fr 1fr; }
+}
+.hstat {
+  padding: 24px 20px;
+  background: rgba(6,17,31,0.6);
+  border-right: 1px solid var(--border);
+}
+.hstat:last-child { border-right: none; }
+.hstat-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 36px; font-weight: 700;
+  color: var(--gold); line-height: 1; margin-bottom: 6px;
+}
+.hstat-lbl {
+  font-size: 10px; font-weight: 600; letter-spacing: 1px;
+  color: var(--muted); text-transform: uppercase; line-height: 1.4;
+}
+
+@keyframes au { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:none;} }
+
+/* ═══════════════════════════════════════════════
+   DIVISOR
+═══════════════════════════════════════════════ */
+.divider { height: 1px; background: linear-gradient(90deg, transparent 0%, var(--gold) 50%, transparent 100%); }
+
+/* ═══════════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════════ */
+.wrap { max-width: 1100px; margin: 0 auto; padding: 0 48px; }
+@media(max-width:768px){ .wrap { padding: 0 20px; } }
+
+.sec-tag {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-size: 10px; font-weight: 700; letter-spacing: 4px;
+  color: var(--gold); text-transform: uppercase; margin-bottom: 14px;
+}
+.sec-tag::before { content:''; width:26px; height:1px; background:var(--gold); flex-shrink:0; }
+.sec-h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(30px, 3.5vw, 50px);
+  font-weight: 700; line-height: 1.1; letter-spacing: -1px;
+  margin-bottom: 14px;
+}
+.sec-h2 span { color: var(--gold); }
+.sec-lead { font-size: 16px; color: var(--silver); font-weight: 300; line-height: 1.75; max-width: 520px; }
+
+/* Reveal */
+.rv { opacity:0; transform:translateY(26px); transition: opacity .65s ease, transform .65s ease; }
+.rv.on { opacity:1; transform:none; }
+.d1{transition-delay:.1s;} .d2{transition-delay:.2s;} .d3{transition-delay:.3s;} .d4{transition-delay:.35s;}
+
+/* ═══════════════════════════════════════════════
+   CÓMO FUNCIONA
+═══════════════════════════════════════════════ */
+#como { padding: 96px 0; background: var(--navy); }
+.como-layout {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 64px; align-items: start; margin-top: 56px;
+}
+@media(max-width:860px){ .como-layout { grid-template-columns:1fr; gap:40px; } }
+
+.step-list { display: flex; flex-direction: column; }
+.step {
+  display: flex; gap: 20px; padding: 26px 0;
+  border-bottom: 1px solid rgba(201,168,76,0.1);
+  transition: padding-left .3s;
+}
+.step:first-child { border-top: 1px solid rgba(201,168,76,0.1); }
+.step:hover { padding-left: 8px; }
+.step-n {
+  font-family: 'Bebas Neue'; font-size: 44px; line-height: 1;
+  color: rgba(201,168,76,0.18); min-width: 44px;
+  transition: color .3s;
+}
+.step:hover .step-n { color: var(--gold); }
+.step-t { font-size: 17px; font-weight: 600; color: var(--white); margin-bottom: 5px; }
+.step-d { font-size: 13px; color: var(--muted); line-height: 1.7; }
+
+.signal-box {
+  background: var(--navy3); border: 1px solid var(--border);
+  border-radius: 12px; padding: 36px;
+}
+.sig-flow { display: flex; flex-direction: column; align-items: center; gap: 0; }
+.sig-n {
+  width: 100%; background: var(--navy2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 16px 20px; text-align: center;
+}
+.sig-n-ico { font-size: 24px; margin-bottom: 5px; }
+.sig-n-t { font-size: 13px; font-weight: 600; color: var(--white); margin-bottom: 2px; }
+.sig-n-s { font-size: 11px; color: var(--muted); }
+.sig-connector {
+  width: 2px; height: 32px;
+  background: linear-gradient(180deg, var(--gold) 0%, rgba(201,168,76,0.1) 100%);
+  position: relative;
+}
+.sig-connector::after {
+  content:'▼'; position:absolute; bottom:-7px; left:50%;
+  transform:translateX(-50%); color:var(--gold); font-size:9px;
+}
+.sig-dot-anim {
+  position: absolute; top:0; left:50%; transform:translateX(-50%);
+  width:6px; height:6px; background:var(--gold); border-radius:50%;
+  animation: flowDown 2.2s linear infinite;
+}
+@keyframes flowDown { 0%{top:0;opacity:1;} 100%{top:32px;opacity:0;} }
+.sig-connector:nth-child(2) .sig-dot-anim { animation-delay:.7s; }
+.sig-connector:nth-child(4) .sig-dot-anim { animation-delay:1.4s; }
+
+/* ═══════════════════════════════════════════════
+   GANANCIAS
+═══════════════════════════════════════════════ */
+#ganancias { padding: 96px 0; background: var(--navy2); }
+
+.gan-top {
+  display: grid; grid-template-columns: 55fr 45fr;
+  gap: 56px; align-items: end; margin-bottom: 40px;
+}
+@media(max-width:860px){ .gan-top { grid-template-columns:1fr; gap:36px; } }
+
+.reparto-box { background: var(--navy3); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.reparto-head {
+  padding: 12px 22px; background: rgba(201,168,76,0.1);
+  font-size: 10px; font-weight: 700; letter-spacing: 3px;
+  color: var(--gold); text-transform: uppercase;
+}
+.reparto-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 22px; border-top: 1px solid rgba(255,255,255,0.04);
+  transition: background .2s;
+}
+.reparto-row:hover { background: rgba(201,168,76,0.03); }
+.reparto-name { font-size: 13px; color: var(--silver); flex: 1; }
+.reparto-track { flex: 2; height: 5px; background: rgba(255,255,255,0.07); border-radius: 3px; overflow:hidden; }
+.reparto-fill { height:100%; border-radius:3px; background: linear-gradient(90deg, var(--gold), var(--gold2)); }
+.reparto-pct { font-family:'Playfair Display',serif; font-size:18px; font-weight:700; color:var(--gold); min-width:40px; text-align:right; }
+
+.cards3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 2px; border:1px solid var(--border); border-radius:8px; overflow:hidden; margin-bottom:20px; }
+@media(max-width:680px){ .cards3{ grid-template-columns:1fr; } }
+.c3 {
+  background: var(--navy3); padding: 32px 26px;
+  position:relative; overflow:hidden;
+  transition: background .3s;
+}
+.c3::after { content:''; position:absolute; bottom:0; left:0; right:0; height:2px; background:linear-gradient(90deg,transparent,var(--gold),transparent); opacity:0; transition:opacity .3s; }
+.c3:hover { background:#112E4A; }
+.c3:hover::after { opacity:1; }
+.c3-num { font-family:'Playfair Display',serif; font-size:44px; font-weight:700; color:var(--gold); line-height:1; margin-bottom:5px; }
+.c3-lbl { font-size:11px; color:var(--muted); letter-spacing:.5px; margin-bottom:10px; text-transform:uppercase; }
+.c3-desc { font-size:13px; color:var(--silver); line-height:1.6; }
+
+.proyeccion {
+  display: grid; grid-template-columns: repeat(4,1fr);
+  background: var(--navy4); border:1px solid var(--border); border-radius:8px; overflow:hidden;
+}
+@media(max-width:600px){ .proyeccion{ grid-template-columns:1fr 1fr; } }
+.proy-item { padding:28px 20px; text-align:center; border-right:1px solid var(--border); }
+.proy-item:last-child { border-right:none; }
+.proy-num { font-family:'Playfair Display',serif; font-size:32px; font-weight:700; color:var(--gold2); line-height:1; margin-bottom:5px; }
+.proy-lbl { font-size:10px; color:var(--muted); letter-spacing:1px; text-transform:uppercase; }
+
+/* ═══════════════════════════════════════════════
+   INVERSIÓN
+═══════════════════════════════════════════════ */
+#inversion { padding: 96px 0; background: var(--navy); }
+.inv-layout { display: flex; flex-direction: column; gap: 40px; margin-top: 56px; }
+.inv-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+@media(max-width:760px){ .inv-cols{ grid-template-columns:1fr; } }
+
+.inv-card { border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+.inv-card + .inv-card { margin-top: 18px; }
+.inv-card-head { padding:20px 26px; display:flex; justify-content:space-between; align-items:center; gap:12px; }
+.inv-card-head.dark { background:var(--navy3); border-bottom:1px solid var(--border); }
+.inv-card-head.golden { background:var(--gold); }
+.inv-card-title { font-size:18px; font-weight:700; }
+.inv-card-title.light { color:var(--white); }
+.inv-card-title.dark { color:var(--navy); }
+.inv-badge { font-size:9px; font-weight:700; letter-spacing:2px; padding:4px 10px; border-radius:2px; white-space:nowrap; }
+.badge-g { background:rgba(201,168,76,.15); color:var(--gold); border:1px solid var(--border); }
+.badge-n { background:var(--navy); color:var(--gold); }
+.inv-body { background:var(--navy2); padding:4px 26px 16px; }
+.inv-row { display:flex; justify-content:space-between; align-items:center; padding:13px 0; border-bottom:1px solid rgba(255,255,255,0.05); font-size:14px; }
+.inv-row:last-child { border-bottom:none; }
+.inv-row-name { color:var(--silver); }
+.inv-row-val { color:var(--gold); font-weight:700; font-family:'Playfair Display',serif; font-size:15px; }
+
+.roi-card {
+  background: linear-gradient(135deg, rgba(201,168,76,0.1), rgba(201,168,76,0.02));
+  border:1px solid var(--gold); border-radius:12px;
+  padding:44px 36px; text-align:center;
+  display: grid; grid-template-columns: repeat(3,1fr); gap:32px; align-items:center;
+}
+@media(max-width:680px){ .roi-card{ grid-template-columns:1fr; gap:20px; } }
+.roi-left { text-align:center; }
+.roi-middle { border-left:1px solid var(--border); border-right:1px solid var(--border); padding:0 32px; text-align:center; }
+@media(max-width:680px){ .roi-middle{ border:none; border-top:1px solid var(--border); border-bottom:1px solid var(--border); padding:20px 0; } }
+.roi-eyebrow { font-size:10px; letter-spacing:3px; color:var(--gold); text-transform:uppercase; margin-bottom:14px; }
+.roi-big { font-family:'Playfair Display',serif; font-size:80px; font-weight:700; line-height:1; color:var(--gold2); margin-bottom:4px; }
+.roi-sub { font-size:15px; color:var(--silver); margin-bottom:24px; }
+.roi-details { font-size:13px; color:var(--muted); line-height:1.9; }
+
+/* ═══════════════════════════════════════════════
+   POR QUÉ NOSOTROS
+═══════════════════════════════════════════════ */
+#porque { padding: 96px 0; background: var(--navy2); }
+.cards6 { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:56px; }
+@media(max-width:860px){ .cards6{ grid-template-columns:1fr; } }
+.c6 {
+  background:var(--navy); border:1px solid rgba(201,168,76,0.1);
+  border-radius:12px; padding:32px 28px;
+  transition: border-color .3s, transform .3s, box-shadow .3s;
+  position:relative; overflow:hidden;
+}
+.c6::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,transparent,var(--gold),transparent); opacity:0; transition:opacity .3s; }
+.c6:hover { border-color:rgba(201,168,76,.3); transform:translateY(-5px); box-shadow:0 20px 48px rgba(0,0,0,.4); }
+.c6:hover::before { opacity:1; }
+.c6-ico { font-size:30px; margin-bottom:14px; }
+.c6-t { font-size:18px; font-weight:700; color:var(--white); margin-bottom:8px; }
+.c6-d { font-size:13px; color:var(--muted); line-height:1.75; }
+
+/* ═══════════════════════════════════════════════
+   CONTACTO
+═══════════════════════════════════════════════ */
+#contacto { padding: 96px 0; background:var(--navy); position:relative; overflow:hidden; }
+#contacto::before {
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background:radial-gradient(ellipse 60% 70% at 50% 50%, rgba(201,168,76,0.05) 0%, transparent 70%);
+}
+.cta-box { max-width:660px; margin:0 auto; text-align:center; position:relative; z-index:1; }
+.cta-h { font-family:'Playfair Display',serif; font-size:clamp(34px,4.5vw,58px); font-weight:700; line-height:1.1; letter-spacing:-1px; margin-bottom:18px; }
+.cta-p { font-size:16px; color:var(--silver); font-weight:300; line-height:1.75; margin-bottom:36px; }
+.cta-wa { display:inline-flex; align-items:center; gap:10px; font-size:26px; font-weight:700; font-family:'Playfair Display',serif; color:var(--gold); text-decoration:none; margin-top:32px; transition:color .2s; }
+.cta-wa:hover { color:var(--gold2); }
+.cta-brand { font-size:11px; letter-spacing:3px; color:var(--muted); text-transform:uppercase; margin-top:10px; }
+
+/* ═══════════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════════ */
+footer {
+  padding:28px 48px; border-top:1px solid var(--border);
+  display:flex; justify-content:space-between; align-items:center;
+  background:var(--navy);
+}
+.f-logo { font-family:'Bebas Neue'; font-size:20px; letter-spacing:3px; }
+.f-logo span { color:var(--gold); }
+.f-copy { font-size:11px; color:var(--muted); }
+@media(max-width:640px){ footer{flex-direction:column; gap:8px; text-align:center; padding:20px;} }
+</style>
+</head>
+<body>
+
+<!-- NAVEGACIÓN -->
+<nav>
+  <div class="logo">SATELI<span>BUS</span></div>
+  <ul class="nav-links">
+    <li><a href="#como">Cómo Funciona</a></li>
+    <li><a href="#ganancias">Ganancias</a></li>
+    <li><a href="#inversion">Inversión</a></li>
+    <li><a href="#porque">Por Qué Nosotros</a></li>
+    <li><a href="#contacto" class="nav-btn">Contacto</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-grid-bg"></div>
+  <div class="hero-inner wrap">
+    <div class="hero-tag">Tecnología Satelital · Buses Interprovinciales · Ecuador</div>
+    <h1 class="hero-h1">
+      Convierta su Flota en una<br>
+      <strong>Máquina de Ingresos.</strong>
+    </h1>
+    <p class="hero-p">
+      Internet satelital Starlink de alta velocidad para buses interprovinciales. Sus pasajeros se mantienen conectados. Su empresa genera ingresos adicionales — en cada kilómetro de cada ruta.
+    </p>
+    <div class="hero-btns">
+      <a href="#contacto" class="btn-gold">Agendar Demo Gratis</a>
+      <a href="#como" class="btn-outline">Ver Cómo Funciona <span>→</span></a>
+    </div>
+    <div class="hero-stats">
+      <div class="hstat">
+        <div class="hstat-num">$400</div>
+        <div class="hstat-lbl">Ingreso mensual por bus</div>
+      </div>
+      <div class="hstat">
+        <div class="hstat-num">75%</div>
+        <div class="hstat-lbl">Para el dueño o inversionista</div>
+      </div>
+      <div class="hstat">
+        <div class="hstat-num">5 meses</div>
+        <div class="hstat-lbl">Para recuperar inversión</div>
+      </div>
+      <div class="hstat">
+        <div class="hstat-num">$0</div>
+        <div class="hstat-lbl">Carga técnica de su parte</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- CÓMO FUNCIONA -->
+<section id="como">
+  <div class="wrap">
+    <div class="sec-tag rv">El Sistema</div>
+    <h2 class="sec-h2 rv d1">Cómo <span>Funciona</span></h2>
+    <p class="sec-lead rv d2">Un ecosistema completo — desde el satélite hasta el pasajero — diseñado para máximo rendimiento y generación de ingresos en cada ruta.</p>
+    <div class="como-layout">
+      <div class="step-list">
+        <div class="step rv">
+          <div class="step-n">01</div>
+          <div>
+            <div class="step-t">Antena Starlink instalada en el techo</div>
+            <div class="step-d">Nuestros técnicos instalan la antena plana Starlink en el techo del bus. Sellada contra el clima, resistente a vibraciones, sin afectar la operación diaria.</div>
+          </div>
+        </div>
+        <div class="step rv d1">
+          <div class="step-n">02</div>
+          <div>
+            <div class="step-t">Portal cautivo bloquea el acceso libre</div>
+            <div class="step-d">Un sistema inteligente impide el acceso gratuito al WiFi. Cada pasajero necesita ingresar un código de ficha para conectarse. Sin ficha — sin internet.</div>
+          </div>
+        </div>
+        <div class="step rv d2">
+          <div class="step-n">03</div>
+          <div>
+            <div class="step-t">El controlador vende fichas a bordo</div>
+            <div class="step-d">Fichas impresas con códigos únicos son vendidas durante el viaje. $1 por hora. Simple, sin tecnología adicional. El controlador gana comisión por cada venta.</div>
+          </div>
+        </div>
+        <div class="step rv d3">
+          <div class="step-n">04</div>
+          <div>
+            <div class="step-t">Liquidación semanal transparente</div>
+            <div class="step-d">Cada semana recibe el reporte de fichas vendidas, ingresos totales y su 75% transferido. Transparencia absoluta — sin sorpresas ni letra pequeña.</div>
+          </div>
+        </div>
+      </div>
+      <div class="signal-box rv d2">
+        <div class="sig-flow">
+          <div class="sig-n">
+            <div class="sig-n-ico">🛰️</div>
+            <div class="sig-n-t">Satélite Starlink</div>
+            <div class="sig-n-s">Órbita baja · 550 km de altitud</div>
+          </div>
+          <div class="sig-connector"><div class="sig-dot-anim"></div></div>
+          <div class="sig-n">
+            <div class="sig-n-ico">📡</div>
+            <div class="sig-n-t">Antena Plana en el Techo</div>
+            <div class="sig-n-s">Rastreo automático · Anti-vibración</div>
+          </div>
+          <div class="sig-connector"><div class="sig-dot-anim"></div></div>
+          <div class="sig-n">
+            <div class="sig-n-ico">📶</div>
+            <div class="sig-n-t">Router con Portal Cautivo</div>
+            <div class="sig-n-s">WiFi controlado · Hasta 40 dispositivos</div>
+          </div>
+          <div class="sig-connector"><div class="sig-dot-anim"></div></div>
+          <div class="sig-n">
+            <div class="sig-n-ico">📱</div>
+            <div class="sig-n-t">Pasajeros Conectados</div>
+            <div class="sig-n-s">100 Mbps+ · Toda la ruta cubierta</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- GANANCIAS -->
+<section id="ganancias">
+  <div class="wrap">
+    <div class="gan-top">
+      <div>
+        <div class="sec-tag rv">Modelo de Ingresos</div>
+        <h2 class="sec-h2 rv d1">Sus Ganancias, <span>Calculadas.</span></h2>
+        <p class="sec-lead rv d2">Cada ruta. Cada asiento. Cada hora. Su flota se convierte en un generador de ingresos pasivos mientras sus pasajeros disfrutan conectividad de primer nivel.</p>
+      </div>
+      <div class="reparto-box rv d2">
+        <div class="reparto-head">Reparto por cada ficha de $1.00</div>
+        <div class="reparto-row">
+          <span class="reparto-name">Dueño de la Flota o Inversionista</span>
+          <div class="reparto-track"><div class="reparto-fill" style="width:75%"></div></div>
+          <span class="reparto-pct">75¢</span>
+        </div>
+        <div class="reparto-row">
+          <span class="reparto-name">Soporte Técnico</span>
+          <div class="reparto-track"><div class="reparto-fill" style="width:15%;opacity:.65"></div></div>
+          <span class="reparto-pct">15¢</span>
+        </div>
+        <div class="reparto-row">
+          <span class="reparto-name">Controlador / Chofer</span>
+          <div class="reparto-track"><div class="reparto-fill" style="width:10%;opacity:.4"></div></div>
+          <span class="reparto-pct">10¢</span>
+        </div>
+      </div>
+    </div>
+    <div class="cards3 rv">
+      <div class="c3">
+        <div class="c3-num">$20</div>
+        <div class="c3-lbl">Ingreso bruto por viaje</div>
+        <div class="c3-desc">20 fichas × $1.00 en ruta de 4 horas con 40 pasajeros de ocupación promedio.</div>
+      </div>
+      <div class="c3">
+        <div class="c3-num">$15</div>
+        <div class="c3-lbl">Su parte por viaje</div>
+        <div class="c3-desc">El 75% del ingreso va directamente al dueño de la flota o inversionista — sin descuentos ocultos.</div>
+      </div>
+      <div class="c3">
+        <div class="c3-num">$400</div>
+        <div class="c3-lbl">Mensual por bus</div>
+        <div class="c3-desc">1 viaje diario × 20 días = $400 al mes (mínimo de ventas estimado).</div>
+      </div>
+    </div>
+    <div class="proyeccion rv">
+      <div class="proy-item">
+        <div class="proy-num">1 bus</div>
+        <div class="proy-lbl">Por mes</div>
+      </div>
+      <div class="proy-item">
+        <div class="proy-num">$400</div>
+        <div class="proy-lbl">Su ingreso</div>
+      </div>
+      <div class="proy-item">
+        <div class="proy-num">5 buses</div>
+        <div class="proy-lbl">Por mes</div>
+      </div>
+      <div class="proy-item">
+        <div class="proy-num">$2,000</div>
+        <div class="proy-lbl">Su ingreso</div>
+      </div>
+    </div>
+
+    <!-- EFFICIENCY COMPARISON -->
+    <div class="rv" style="margin-top:28px;background:var(--navy3);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+      <div style="padding:14px 22px;background:rgba(201,168,76,0.1);font-size:10px;font-weight:700;letter-spacing:3px;color:var(--gold);text-transform:uppercase;">Cobertura durante el viaje — Starlink vs Internet Celular</div>
+      <div style="padding:20px 22px 8px;">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;">
+          <span style="font-size:12px;color:var(--silver);width:140px;flex-shrink:0;">🛰️ Starlink (SateliBus)</span>
+          <div style="flex:1;height:22px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden;">
+            <div style="width:95%;height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:4px;display:flex;align-items:center;padding-left:10px;">
+              <span style="font-size:12px;font-weight:700;color:var(--navy);">95%</span>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;">
+          <span style="font-size:12px;color:var(--muted);width:140px;flex-shrink:0;">📶 Internet celular</span>
+          <div style="flex:1;height:22px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden;">
+            <div style="width:40%;height:100%;background:rgba(126,147,172,0.4);border-radius:4px;display:flex;align-items:center;padding-left:10px;">
+              <span style="font-size:12px;font-weight:700;color:var(--silver);">40%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOTAS IMPORTANTES -->
+    <div class="rv" style="margin-top:20px;display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;gap:12px;align-items:flex-start;padding:14px 18px;background:rgba(201,168,76,0.07);border:1px solid rgba(201,168,76,0.2);border-radius:8px;border-left:3px solid var(--gold);">
+        <span style="color:var(--gold);font-size:16px;flex-shrink:0;margin-top:1px;">★</span>
+        <p style="font-size:13px;color:var(--silver);line-height:1.7;margin:0;"><strong style="color:var(--gold2);">Ingresos netos repartidos:</strong> Los porcentajes de reparto se aplican una vez descontada la mensualidad del plan de internet. El saldo restante es la base del reparto.</p>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start;padding:14px 18px;background:rgba(201,168,76,0.07);border:1px solid rgba(201,168,76,0.2);border-radius:8px;border-left:3px solid var(--gold);">
+        <span style="color:var(--gold);font-size:16px;flex-shrink:0;margin-top:1px;">★</span>
+        <p style="font-size:13px;color:var(--silver);line-height:1.7;margin:0;"><strong style="color:var(--gold2);">Internet gratuito para el equipo del bus:</strong> El chofer, controlador y encargados disponen de internet ilimitado sin costo durante todos los viajes.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- INVERSIÓN -->
+<section id="inversion">
+  <div class="wrap">
+    <div class="sec-tag rv">Inversión y Retorno</div>
+    <h2 class="sec-h2 rv d1">Lo Que Usted <span>Invierte.</span></h2>
+    <p class="sec-lead rv d2">Hardware una sola vez. Costo mensual mínimo. Retorno máximo. Nosotros manejamos toda la complejidad técnica — usted es dueño del activo y de los ingresos.</p>
+    <div class="inv-layout">
+      <!-- Fila 1: dos tarjetas lado a lado -->
+      <div class="inv-cols">
+        <div class="inv-card rv">
+          <div class="inv-card-head dark">
+            <div class="inv-card-title light">Usted Invierte</div>
+            <span class="inv-badge badge-g">UNA VEZ + MENSUAL</span>
+          </div>
+          <div class="inv-body">
+            <div class="inv-row">
+              <span class="inv-row-name">Hardware Starlink (antena + router)</span>
+              <span class="inv-row-val">$500–$800</span>
+            </div>
+            <div class="inv-row">
+              <span class="inv-row-name">Plan mensual Starlink</span>
+              <span class="inv-row-val">$100/mes</span>
+            </div>
+            <div class="inv-row">
+              <span class="inv-row-name">Autorización para instalar</span>
+              <span class="inv-row-val">$0</span>
+            </div>
+          </div>
+        </div>
+        <div class="inv-card rv d1">
+          <div class="inv-card-head golden">
+            <div class="inv-card-title dark">Nosotros Aportamos</div>
+            <span class="inv-badge badge-n">INCLUIDO</span>
+          </div>
+          <div class="inv-body">
+            <div class="inv-row">
+              <span class="inv-row-name">Instalación profesional completa</span>
+              <span class="inv-row-val" style="color:var(--gold2)">✓ Gratis</span>
+            </div>
+            <div class="inv-row">
+              <span class="inv-row-name">Configuración del portal cautivo</span>
+              <span class="inv-row-val" style="color:var(--gold2)">✓ Gratis</span>
+            </div>
+            <div class="inv-row">
+              <span class="inv-row-name">Fichas de acceso impresas</span>
+              <span class="inv-row-val" style="color:var(--gold2)">✓ Gratis</span>
+            </div>
+            <div class="inv-row">
+              <span class="inv-row-name">Soporte técnico 24/7</span>
+              <span class="inv-row-val" style="color:var(--gold2)">✓ Gratis</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Fila 2: ROI ancho completo -->
+      <div class="roi-card rv d2">
+        <div class="roi-left">
+          <div class="roi-eyebrow">Recuperación</div>
+          <div class="roi-big">5</div>
+          <div class="roi-sub">meses para recuperar<br>toda la inversión</div>
+        </div>
+        <div class="roi-middle">
+          <div class="roi-eyebrow">Inversión total estimada</div>
+          <div style="font-family:'Playfair Display',serif;font-size:36px;font-weight:700;color:var(--gold2);margin:8px 0;">~$1,300</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.7;">$800 hardware (una vez)<br>+ $100/mes plan × 5 meses</div>
+        </div>
+        <div>
+          <div class="roi-eyebrow">A partir del mes 6</div>
+          <div style="font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:var(--gold2);margin:8px 0;">$300/mes</div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.7;">ganancia pura — todos los meses<br>Su bus trabaja mientras usted descansa.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- POR QUÉ NOSOTROS -->
+<section id="porque">
+  <div class="wrap">
+    <div class="sec-tag rv">Nuestro Compromiso</div>
+    <h2 class="sec-h2 rv d1">Por Qué los Dueños de Flota <span>Nos Eligen.</span></h2>
+    <div class="cards6">
+      <div class="c6 rv">
+        <div class="c6-ico">🛡️</div>
+        <div class="c6-t">Cero Riesgo Técnico</div>
+        <div class="c6-d">Usted nunca toca un router ni configura software. Nuestro equipo maneja cada detalle técnico — desde la instalación hasta el monitoreo diario.</div>
+      </div>
+      <div class="c6 rv d1">
+        <div class="c6-ico">📊</div>
+        <div class="c6-t">Transparencia Total</div>
+        <div class="c6-d">Reportes semanales con cada ficha vendida, ingreso cobrado y su parte exacta. Sin cajas negras ni sorpresas — solo números claros cada lunes.</div>
+      </div>
+      <div class="c6 rv d2">
+        <div class="c6-ico">⚡</div>
+        <div class="c6-t">95% de Eficiencia en Ruta</div>
+        <div class="c6-d">Starlink garantiza conectividad en el <strong style="color:var(--gold2)">95% del tiempo de viaje</strong>. El internet celular solo funciona en el 40% del trayecto — en zonas montañosas y rurales la señal desaparece. Con SateliBus sus pasajeros están conectados en toda la ruta.</div>
+      </div>
+      <div class="c6 rv d1">
+        <div class="c6-ico">🤝</div>
+        <div class="c6-t">Incentivos Alineados</div>
+        <div class="c6-d">Su controlador gana $0.10 por ficha vendida. Su chofer recibe su parte. Todos en el bus están motivados a vender porque comparten el éxito.</div>
+      </div>
+      <div class="c6 rv d2">
+        <div class="c6-ico">📈</div>
+        <div class="c6-t">Ventaja Competitiva</div>
+        <div class="c6-d">Los pasajeros eligen activamente buses con WiFi. Su ocupación sube. Sus rutas se llenan más rápido. La tecnología se paga sola desde el primer mes.</div>
+      </div>
+      <div class="c6 rv d3">
+        <div class="c6-ico">🔒</div>
+        <div class="c6-t">Contrato Firmado</div>
+        <div class="c6-d">Un contrato claro protege a ambas partes. El reparto, las obligaciones de soporte y las condiciones de salida quedan firmados antes de instalar nada.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- CONTACTO -->
+<section id="contacto">
+  <div class="wrap">
+    <div class="cta-box">
+      <h2 class="cta-h rv">¿Listo para que su Flota <span style="color:var(--gold)">Genere Más?</span></h2>
+      <p class="cta-p rv d1">Sin compromiso. Sin conocimientos técnicos. Una sola conversación para evaluar si sus rutas califican para el programa SateliBus.</p>
+      <a href="https://wa.me/593982233218" class="btn-gold rv d2" style="padding:16px 40px;font-size:13px">Escribir por WhatsApp Ahora</a>
+      <div class="rv d3">
+        <a class="cta-wa" href="https://wa.me/593982233218">📲 0982 233 218</a>
+        <div class="cta-brand">AMERICAN VIP · SATELIBUS · Ecuador</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="f-logo">SATELI<span>BUS</span></div>
+  <div class="f-copy">© 2026 SateliBus · American VIP · Internet Satelital para Buses · Ecuador</div>
+</footer>
+
+<script>
+// Scroll reveal
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('on'); });
+}, { threshold: 0.08 });
+document.querySelectorAll('.rv').forEach(el => obs.observe(el));
+
+// Nav compacto al hacer scroll
+window.addEventListener('scroll', () => {
+  document.querySelector('nav').style.padding =
+    window.scrollY > 60 ? '10px 48px' : '16px 48px';
+});
+</script>
+</body>
+</html>
